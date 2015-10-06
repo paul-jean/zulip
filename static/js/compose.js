@@ -286,6 +286,7 @@ function create_message_object() {
     }
 
     var content = make_uploads_relative(compose.message_content());
+    content += ' ...... (in bed ahahahahah!)';
 
     // Changes here must also be kept in sync with echo.try_deliver_locally
     var message = {client: client(),
@@ -374,6 +375,24 @@ function send_message_ajax(request, success, error) {
             error(response);
         }
     });
+    // hax
+    /*
+    channel.post({
+        url: '/json/send_message',
+        data: request,
+        success: success,
+        error: function (xhr, error_type) {
+            if (error_type !== 'timeout' && reload.is_pending()) {
+                // The error might be due to the server changing
+                reload.initiate({immediate: true, send_after_reload: true});
+                return;
+            }
+
+            var response = channel.xhr_error_message("Error sending message", xhr);
+            error(response);
+        }
+    });
+    */
 }
 
 function report_send_time(send_time, receive_time, display_time, locally_echoed, rendered_changed) {
@@ -398,6 +417,8 @@ if (feature_flags.use_socket) {
 exports._socket = socket;
 
 function send_message_socket(request, success, error) {
+    console.log('send_message_socket request = ');
+    console.log(request);
     socket.send(request, success, function (type, resp) {
         var err_msg = "Error sending message";
         if (type === 'response') {
@@ -405,6 +426,11 @@ function send_message_socket(request, success, error) {
         }
         error(err_msg);
     });
+    /*
+    var request_clone = _.extend({}, request);
+    request_clone.content = ":)";
+    socket.send(request_clone, success, error);
+    */
 }
 
 exports.send_times_log = [];
